@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/fieldset/fieldset.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/fieldset/fieldset.js"></script>
+	<script>
+	
+	var filename;//获取文件名  保存数据库
+	var suffic//获取文件后缀名
+		$(function(){
+			
+			$("#songName").textbox({
+				
+			});
+			$("#lrc").textbox({
+				
+			});
+			$("#Songbasicinfo").lqfieldset({
+				title:"歌曲的基本信息",
+				collapsible:true,               //是否可伸缩 
+		        collapsed:false,                //初始化状态 是否为收起状态 
+		        checkboxToggle:false,           //伸缩按钮是否为checkbox 
+			});
+			$("#UploadLable").click(function(){//点击图片触发file
+				$("#updaloSong").trigger('click');
+			});
+			
+			$("#updaloSong").change(function(){
+				$("#IframeFrom").submit();
+				var file = $("#updaloSong").val();
+				var index = file.lastIndexOf("\\");
+				filename  = file.substring(index+1);
+				//console.log(filename);
+				var pointIndex = filename.lastIndexOf(".");
+				suffic = filename.substring(pointIndex+1);
+				//console.log(suffic);
+			});
+			
+		})
+		
+		function loadiFrame(){
+			/* $.ajax({
+				url:"/data.do",
+				method:"get",
+				success:function(data){
+					console.log(data);
+				}
+			}); */
+			//当iframe加载完成时
+			if(suffic=="mp3"){
+				if(filename!=""){
+					$("#songName").textbox('setValue',filename);	
+				}	
+			}else if(suffic=="lrc"){
+				if(filename!=""){
+					$("#lrc").textbox('setValue',filename);	
+				}	
+			}
+			
+			
+			var iframe = $("#iframe").contents().find("body");
+			var iframetext = $(iframe).text();
+			if(iframetext!=""){
+				var iframeObject = $.parseJSON(iframetext);
+				//console.log(iframeObject.path);
+				var point2 = iframeObject.path.lastIndexOf(".");
+				var suffic2 = iframeObject.path.substring(point2+1);
+				console.log(suffic2);
+				if(suffic2=="mp3"){
+					$("#musicpath").val(iframeObject.path);	
+				}else if(suffic2=="lrc"){
+					$("#musiclrc").val(iframeObject.path);	
+				}
+				
+			}
+		}
+		
+		function SubmitFrame(){
+			var parecontent = $("#basicform").serialize();
+			$.ajax({
+				url:"/AddSong.do?clazz=song",
+				method:"get",
+				data:parecontent,
+				dataType:"json",
+				success:function(data){
+					//console.log(data);
+					if(data.success=="success"){
+						parent.$("#studentWin").window('close');
+						console.log("传输成功了");
+					}
+				}
+			});
+		}
+	</script>
+</head>
+<body>
+
+
+<div id="main"  style="width:620px;height:320px;">
+<form action="#" id="basicform">
+	<div id="Songbasicinfo" style="width:600px">
+	
+	<div style="float:left;width:240px;margin-top:20px;margin-top:20px;">
+		<span>歌曲名字：</span>
+		<span><input id="songName" name="music1"/></span>
+		<span>歌词名字：</span>
+		<span><input id="lrc" name="lrc"/></span>
+	</div>
+	
+	<div style="float:left;width:300px;margin-top:20px;margin-top:-0px;">
+		<span><img id="UploadLable" src="/image/b0u.png" style="width:80px;height:80px" ></span>
+	</div>
+	
+	<div onclick="SubmitFrame()" style="cursor: pointer; float: right; width: 120px; height: 26px; background: #c30; line-height: 26px; border-radius: 4px; text-align: center;">
+		提交
+	</div>
+	
+	<!-- 保存到数据库的歌曲路径 -->
+	<div style="display:none"><input id="musicpath" name="music2"></input></div>
+	<div style="display:none"><input id="musiclrc" name="musiclrc"></input></div>
+	</div>
+</form>
+
+<!-- 隐藏的控件  -->
+	<!-- file -->
+	<div style="display:none">
+		<form id="IframeFrom" action="upload.do" target="iframe" method="post" enctype="multipart/form-data">
+				<input id="updaloSong"  type="file" name="music" style="display:none"/>
+		</form>
+	</div>
+	<!-- iframe -->
+	<div style="display:none">
+	<iframe onload="loadiFrame()" id="iframe" name="iframe" style="width:200px;height:100px;" style="display:none" >
+		
+	</iframe>
+	</div>
+</div>
+
+</body>
+</html>

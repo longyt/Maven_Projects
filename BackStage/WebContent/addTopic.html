@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/fieldset/fieldset.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/fieldset/fieldset.js"></script>
+	
+	
+<script>
+
+	$(function(){
+		$("#question").textbox({
+			
+		});
+		$("#aa").textbox({
+			
+		});
+		$("#ab").textbox({
+			
+		});
+		$("#ac").textbox({
+	
+		});
+		$("#ad").textbox({
+	
+		});
+		$("#ra").textbox({
+	
+		});
+		
+		//上传图片点击事件
+		$("#UploadButton").click(function(){
+			$("#file").trigger('click');
+		});
+		//file改变时触发submit事件
+		$("#file").change(function(){
+			$("#uploadTopic").submit();
+		})
+		
+	})
+	
+	
+	function iframeOnload(){
+		var iframecontent  =  $("#Topiciframe").contents().find("body");
+		var iframeText = $(iframecontent).text();
+		if(iframeText!=""){
+			var iframeObject = $.parseJSON(iframeText);
+			$("#question").textbox('setValue',iframeObject.path);
+		}
+	}
+	
+		
+	function PutData(){
+		console.log("aaaa");
+		var TopicinfoData = $("#tipocinfoform").serialize();
+		$.ajax({
+			url:"AddTopic.action",
+			method:"get",
+			data:TopicinfoData,
+			dataTyep:"json",
+			success:function(data){
+				console.log(data.length);
+				if(data.length>0){
+					parent.$("#studentWin").window('close');
+				}
+			}
+		});
+	}
+	
+	
+	
+</script>
+
+<style type="text/css">
+	#UploadButton{
+		background-image: url("/Images/upload.jpg");
+		background-repeat: no-repeat;
+		background-size: 100px 100px;
+	}
+</style>
+	
+</head>
+<body>
+
+<div style="width:700px;height:20px;">
+	<div style="width:350px;height:20px;">
+		<form id="uploadTopic" action="upload.do" target="Topiciframe" method="post" enctype="multipart/form-data">
+		<span style="display:none"><input type="file" id="file" name="TopicFile"/></span>	
+		</form>
+	</div>
+	<div id="UploadButton" style="width:100px;height:100px; border:2px solid red; float: right;background:; margin-right: 100px;cursor: pointer;margin-bottom: 40px;border-radius:60px;"></div>
+</div>
+
+<form id="tipocinfoform">
+<div id="TopicInfo" style="width:700px;height:550px;background: ;">
+	<div style="width:350px;height:80px;">
+		<span>题目:</span>
+		<span><input id="question" name="question"></span>
+	</div>
+	<div style="width:350px;height:80px;">
+		<span style="float: left">选项A:<input id="aa" name="aa"  style="width:100px;"/></span>
+		<span style="float: left">选项B:<input id="ab" name="ab"  style="width:100px;"/></span>
+	</div>
+	<div style="width:350px;height:80px;">
+		<span style="float: left">选项C:<input id="ac" name="ac"  style="width:100px;"/></span>
+		<span style="float: left">选项D:<input id="ad" name="ad"  style="width:100px;"/></span>
+	</div>
+	<div style="width:350px;height:80px;">
+		<span>答案R:</span><span><input id="ra" name="ra"  style="width:100px;"/></span>
+	</div>
+	<div style="width:350px;height:100px;">
+		详解:
+		<textarea rows="5" cols="25" id="comment" name="comment"></textarea>
+		<div onclick="PutData()" id="PutData" style="background: red;width:80px;height:30px;float: right;text-align: center;line-height: 30px;border-radius:5px;cursor: pointer;">提交</div>
+		<iframe id="Topiciframe" name="Topiciframe" onload="iframeOnload()" style="display:none">
+			
+		</iframe>
+	</div>
+	
+</div>
+</form>
+
+
+
+</body>
+</html>

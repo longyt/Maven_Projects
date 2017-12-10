@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>驾考在线答题 - 后台管理系统</title>
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	<script>
+	var setting={
+			async:{
+				autoParam:["id=Parentid"],
+				enable:true,
+				type:'get',
+				url:'/Select.do?clazz=bundle'
+			},
+			callback:{
+				onClick:treeitemOnClick
+			}
+	}
+		$(function(){
+			$(".menuItem").click(closeMenu);
+			$.fn.zTree.init($("#tree"), setting);
+		})
+		
+		function treeitemOnClick(event, treeId, treeNode){
+			
+			var title = treeNode.name;
+			console.log(title=="我的题目");
+			
+			if(!$("#tt").tabs('exists',title)){
+				if(title=="我的歌曲"){
+					$("#tt").tabs('add',{
+						title:title,
+						content:"<iframe src='text.html' width='99%' height='99%' frameborder='no' border='0' marginwidth='0' marginheight='0' scrolling='no' allowtransparency='yes'></iframe>"
+						});		
+				}else if(title=="我的用户"){
+					$("#tt").tabs('add',{
+						title:title,
+						content:"<iframe src='User.html' width='99%' height='99%' frameborder='no' border='0' marginwidth='0' marginheight='0' scrolling='no' allowtransparency='yes'></iframe>"
+						});	
+				}else if(title=="我的题目"){
+					$("#tt").tabs('add',{
+						title:title,
+						content:"<iframe src='topic.html' width='99%' height='99%' frameborder='no' border='0' marginwidth='0' marginheight='0' scrolling='no' allowtransparency='yes'></iframe>"
+						});
+				}
+				
+				
+			}else{
+				$("#tt").tabs('select',title);
+			}
+			
+		}
+		
+	function menu(e, title,index){
+		e.preventDefault();
+		$("#mm").menu('show',{left:e.pageX,top:e.pageY});
+		$("#mm").data("title",title);
+	}
+	
+	//定一个数组
+	var menuarray=null;
+	function closeMenu(){
+		menuarray=new Array();
+		var currentOperate = $(this).attr("operate").trim();
+		var title=$("#mm").data("title");//当前title
+		if(currentOperate=="current"){
+			$("#tt").tabs('close',title);
+		}else if(currentOperate=="other"){
+			//得到所有面板标签
+			var alltabs = $("#tt").tabs('tabs');
+			//循环alltabs所有  得到不相同的放入menuarray数组中
+			$.each(alltabs,function(i,v){
+				var alltitle = $(v).panel('options').title;
+				if(title!=alltitle){
+					menuarray.push(alltitle);
+				}
+			});
+			//再次循环menuarray数组
+			$.each(menuarray,function(index,object){
+				$("#tt").tabs('close',object);
+			});
+		}else if(currentOperate=="all"){
+			menuarray=new Array();
+			var  alltabs = $("#tt").tabs('tabs');
+			$.each(alltabs,function(i,v){
+				var alltitle = $(v).panel('options').title;
+				menuarray.push(alltitle);
+			});
+			$.each(menuarray,function(index,value){
+				$("#tt").tabs('close',value);
+			});
+		}else if(currentOperate=="left"){//关闭左侧
+			menuarray=new Array();
+			var  alltabs = $("#tt").tabs('tabs');
+			for(var k=0;k<alltabs.length;k++){
+				if(title==alltabs[k].panel('options').title){
+					break;
+				}
+				var alltitle = alltabs[k].panel('options').title;
+				menuarray.push(alltitle);
+			}
+			for(var i=0;i<menuarray.length;i++){
+				$("#tt").tabs('close',menuarray[i]);
+			}
+		}else if(currentOperate=="right"){//关闭右侧
+			menuarray=new Array();
+			var  alltabs = $("#tt").tabs('tabs');
+			$.each(alltabs,function(i,v){
+				var alltitle = $(v).panel('options').title;
+				menuarray.push(alltitle);
+			});
+			for(var i=0;i<menuarray.length;i++){
+				if(menuarray[i]==title){
+					var index=i;
+				}
+				if(index<=3){
+					index=index+1;
+					var currenttitle = menuarray[index];
+					$("#tt").tabs('close',currenttitle);
+				}
+				
+				
+			}
+		}
+		
+		
+	}
+	
+	</script>
+</head>
+<body class="easyui-layout">
+
+    <div data-options="region:'north',title:'后台操作',split:true" style="height:130px;">
+    
+    
+    </div>
+    <div data-options="region:'west',title:'West',split:true" style="width:220px;">
+    	<ul class="ztree" id="tree"></ul>
+    </div>
+    <div data-options="region:'center',title:'center title'" style="padding:5px;background:#eee;">
+    		<div data-options="region:'center',onContextMenu:menu"  id="tt" class="easyui-tabs" style="width:99%;height:99%;">
+			<div title="welcome" data-options="iconCls:'icon-search'" style="padding:20px;display:none;">
+				
+			</div>
+		</div>
+    </div>
+    
+    <div id="mm" class="easyui-menu" style="width:120px;">
+			<div class="menuItem" operate="current">关闭当前</div>
+			<div class="menuItem" operate="other">关闭其他</div>
+			<div class="menuItem" operate="all">关闭所有</div>
+			<div class="menuItem" operate="left">关闭左侧</div>
+			<div class="menuItem" operate="right">关闭右侧</div>
+			</div>
+    <!-- 添加歌曲的窗口 -->
+<div id="studentWin"></div>
+
+</body>
+</html>

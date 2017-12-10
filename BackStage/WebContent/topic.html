@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	
+	<script>
+	var typeDate="";
+	var deleteRow;
+	var deleteindex;
+	var currentEditIndex;
+	var currentEditRow;
+	$(function(){
+		$("#userlist").datagrid({
+			url:"/Select.do?clazz=topic",
+			method:"get",
+			toolbar:"#toolbar",
+			onDblClickRow:OnDbClick,
+			onClickRow:ClickRow,
+			columns:[[
+				{field:"tid",title:"编号",width:120,align:"center"},
+				{field:"question",title:"问题",width:160,align:"center",editor:'textbox'},
+				{field:"aa",title:"答案A",width:120,align:"center",editor:'textbox'},
+				{field:"ab",title:"答案B",width:120,align:"center",editor:'textbox'},
+				{field:"ac",title:"答案C",width:120,align:"center",editor:'textbox'},
+				{field:"ad",title:"答案D",width:120,align:"center",editor:'textbox'},
+				{field:"ra",title:"正确答案",width:120,align:"center",editor:'textbox'},
+				{field:"comment",title:"注解",width:200,align:"center",editor:'textbox'}
+			]]
+		});
+	})
+		
+	function AddTopic(){
+		parent.$('#studentWin').window({
+		    width:700,
+		    height:500,
+		    title:"添加题目",
+		    content:'<iframe src="addTopic.html" frameborder="no" height="100%" width="100%" scrolling="no" border="0" allowtransparency="yes"></iframe>',
+		    modal:true,
+		    onClose:function(){
+				$("#userlist").datagrid('load');
+			}
+		});
+	}
+	
+	function OnDbClick(index,row){
+		currentEditIndex=index;
+		currentEditRow=row;
+		$("#userlist").datagrid('beginEdit',index);
+		typeDate="update";
+	}
+	
+	function saveTopic(){
+		$("#userlist").datagrid('endEdit',currentEditIndex);
+		var changes = $("#userlist").datagrid('getChanges');
+		var changeRow=changes[changes.length-1];
+		if(typeDate == "update"){
+			$.ajax({
+				url:"/UpdateServlet.do?clazz=topic",
+				method:"get",
+				data:changeRow,
+				dataType:"json"
+			});
+		}
+	}
+	
+	function ClickRow(index,row){
+		deleteindex=index;
+		deleteRow=row;
+	}
+	
+	function deleteTopic(){
+		$("#userlist").datagrid('deleteRow',deleteindex);
+		$.ajax({
+			url:"/Delete.do?clazz=topic",
+			method:"get",
+			dataType:"json",
+			data:deleteRow
+		});
+	}
+	
+	function exportTopic(){
+		 $.ajax({
+			url:"/ExportServlet.do?clazz=topic",
+			method:"get"
+		}); 
+	}
+	
+	function importTopic(){
+		parent.$("#studentWin").window({
+			width:450,
+			height:250,
+			content:'<iframe src="ImportTopic.html" frameborder="no" height="100%" width="100%" scrolling="no" border="0" allowtransparency="yes"></iframe>',
+			onClose:function(){
+				$("#userlist").datagrid('load');
+			}
+		});
+	}
+	</script>
+
+</head>
+<body>
+
+<div id="toolbar">
+	<a href="javascript:AddTopic()" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加歌曲</a>
+	<a href="javascript:deleteTopic()" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">删除歌曲</a>
+	<a href="javascript:saveTopic()" class="easyui-linkbutton" data-options="iconCls:'icon-save'">保存</a>
+	<a href="javascript:exportTopic()" class="easyui-linkbutton">导出</a>
+	<a href="javascript:importTopic()"'>导入</a>
+</div>
+
+<div id="userlist" data-options="singleSelect:true"></div>
+
+</body>
+</html>

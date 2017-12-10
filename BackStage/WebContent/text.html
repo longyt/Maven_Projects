@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	
+	<script>
+		$(function(){
+			$("#userlist").datagrid({
+				url:"/Select.do?clazz=song",
+				toolbar:"#toolbar",
+				method:"get",
+				onDblClickRow:DblClickRow,
+				onClickRow:ClickRow,
+				pageList:[5,10,15,20],
+				pageSize:5,
+				pagination:true,
+				columns:[[
+					{field:"sid",title:"编号",width:100,align:"center",editor:'textbox'},
+					{field:"songName",title:"歌名",width:100,align:"center",editor:'textbox'},
+					{field:"songAuthor",title:"作者",width:100,align:"center",editor:'textbox'},
+					{field:"path",title:"路径",width:250,align:"center",editor:'textbox'},
+					{field:"lrc",title:"歌词",width:250,align:"center",editor:'textbox'}
+				]]
+			});
+		})
+	
+		var currentindex;
+		var currentrow;
+		function DblClickRow(index,row){
+			currentindex=index;
+			currentrow=row;
+			$("#userlist").datagrid('beginEdit',index);
+			$("#userlist").data("message","updateRows");
+		}
+		//定义一个数组去装add的sid
+		var SidArray=new Array();
+		function save(){
+			var addmessage = $("#userlist").data('message');
+			$("#userlist").datagrid('endEdit',currentindex);//停止编辑
+			var change  =  $("#userlist").datagrid('getChanges');//获得改变值
+			console.log(change);
+			var addrow;//发送的行
+			if(addmessage=="updateRows"){
+				$.each(change,function(k,v){
+						if(currentrow.sid==change[k].sid){
+							addrow=change[k];
+						}
+					})
+					$.ajax({
+						url:"/UpdateServlet.do?clazz=song",
+						method:"get",
+						data:addrow,
+						dataType:"json"
+					});
+					console.log(daddrow);
+			}
+			
+		}
+		//添加歌曲暂时不用
+		//添加歌曲暂时不用
+		//添加歌曲暂时不用
+
+		//添加歌曲暂时不用
+		//添加歌曲暂时不用
+		//添加歌曲暂时不用
+		
+		function addSong(){
+			parent.$("#studentWin").window({
+				width:650,
+				height:350,
+				title:"添加歌曲",
+				content:'<iframe src="addSong.html" frameborder="no" height="100%" width="100%" scrolling="no" border="0" allowtransparency="yes"></iframe>',
+				modal:true,
+				onClose:function(){
+					$("#userlist").datagrid('load');
+				}
+			});
+			
+		}
+		
+		var deleteRowIndex;
+		var deleteRow;
+		function ClickRow(index,row){
+			deleteRowIndex=index;
+			deleteRow=row;
+			
+		}
+		function OnClickDeleteRow(){
+			$("#userlist").datagrid('deleteRow',deleteRowIndex);
+			$.ajax({
+				url:"/Delete.do?clazz=song",
+				method:"get",
+				data:deleteRow,
+				dataType:"json"
+			});
+		}
+		function exportsong(){
+			$.ajax({
+				url:"/ExportServlet.do?clazz=song",
+				method:"get"
+			});
+		}
+		function importsong(){
+			parent.$("#studentWin").window({
+				width:450,
+				height:250,
+				content:'<iframe src="ImportSong.html" frameborder="no" height="100%" width="100%" scrolling="no" border="0" allowtransparency="yes"></iframe>',
+				onClose:function(){
+					$("#userlist").datagrid('load');
+				}
+			});
+		}
+	</script>
+
+</head>
+<body>
+
+<div id="toolbar">
+	<a href="javascript:addSong()" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加歌曲</a>
+	<a href="javascript:OnClickDeleteRow()" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">删除歌曲</a>
+	<a href="javascript:save()" class="easyui-linkbutton" data-options="iconCls:'icon-save'">保存</a>
+	<a href="javascript:exportsong()" class="easyui-linkbutton">导出</a>
+	<a href="javascript:importsong()" class="easyui-linkbutton">导入</a>
+</div>
+
+<div id="userlist" data-options="singleSelect:true"></div>
+
+</body>
+</html>

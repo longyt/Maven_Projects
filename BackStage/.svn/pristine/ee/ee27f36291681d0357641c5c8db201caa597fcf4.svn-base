@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+
+<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/fieldset/fieldset.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/fieldset/fieldset.js"></script>
+	
+	<script>
+	var time;
+			$(function(){
+				$("#path").textbox({
+					
+				});
+				$("#export").click(function(){
+					$("#file").trigger('click');
+					 
+				})
+				$("#file").change(function(){
+					
+					
+					var file = $("#file").val();
+					var index = file.lastIndexOf("\\");
+					filename  = file.substring(index+1);
+					$("#path").textbox('setValue',filename);
+					
+					
+				});
+				
+				$("#importfile").click(function(){
+					var importform = $("#importForm").serialize();
+					$.ajax({
+						url:"/ImportSetvlet.do?clazz=user",
+						method:"get",
+						data:importform,
+						dataType:"json"
+					});
+					
+					time=setInterval("pro()",500);
+				});
+			})
+			
+			
+			function pro(){
+				$.ajax({
+					url:"/ContainServlet.do",
+					method:"get",
+					dataType:"json",
+					success:function(data){
+						var pt =data.percent+"";
+						var precent=pt.substr(0,4);
+						var width=(precent*3)+40;
+						if(precent<99){
+							$("#aa").show();
+							$("#progre").css('width',width);
+						}else{
+							window.clearInterval(time);
+							$("#aa").hide();
+							parent.$("#studentWin").window('close');
+						}
+					}
+				});
+			}
+			
+			
+	</script>
+	
+</head>
+<body>
+<form id="importForm">
+<div style="width:400px;height:100px;">
+	<div style="width:200px;float: left;"><input id="path" style="width:200px;" name="filename"/>
+	<div id="export" style="width:40px;height:23px;border-radius:10px;float: right;cursor: pointer;position:absolute;left:170px;top:8px;">选择</div>
+	<div id="importfile" style="width:70px;height:23px;background: red;border-radius:10px;sursor:pointer;float: right;margin-top: 20px;"><span style="font-size:16px;margin-top:10px;margin-left:18px;sursor:pointer;">导入</span></div>
+	</div>
+
+	<input type="file" name="file" id="file" style="display:none"/>
+	
+</div>
+
+<div style="background: red;width:300px;height: 15px;border-radius:10px;margin-top: 20px;display: none" id="aa">
+		<div style="background: green;width:0px;height: 15px;border-radius:10px;" id="progre"></div>
+	</div>
+</form>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/plugs/ztree/zTreeStyle/zTreeStyle.css">
+	<script type="text/javascript" src="/plugs/jquery/jquery.js"></script>
+	<script type="text/javascript" src="/plugs/easyui/js/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="/plugs/ztree/js/jquery.ztree.core.js"></script>
+	
+<script>
+	var currentrows	;//获取添加的当前行
+	var ondbclickrows;
+	var data="";
+	var EditRow//离开添加编辑的行数据
+	var OnClickRow;//点击行的值
+	var OnClickIndex;
+	var save;
+	$(function(){
+		$("#resultvalue").textbox({
+			
+		});
+		$("#userlist").datagrid({
+			url:"/Select.do?clazz=user",
+			method:"get",
+			onDblClickRow:beginEdit,
+			onClickRow:onClickrow,
+			onSelect:onselect,
+			columns:[[
+				{field:"uid",title:"编号",width:100,align:"center",editor:'textbox'},
+				{field:"uname",title:"姓名",width:100,align:"center",editor:'textbox'},
+				{field:"upassword",title:"密码",width:100,align:"center",editor:'textbox'}
+			]]
+		});
+		
+	})
+	
+	function onClickrow(index,row){
+		OnClickRow=row;
+		OnClickIndex=index;
+		console.log(save);
+		if(save!="save"){//如果是编辑的行继续编辑
+			beginEdit(currentrows,EditRow);	
+		}
+	}
+	function onselect(index,row){
+		$("#userlist").datagrid('endEdit',currentrows);
+		$("#userlist").datagrid('endEdit',ondbclickrows);
+		var ChangeRows = $("#userlist").datagrid('getChanges');
+		EditRow = ChangeRows[ChangeRows.length-1];
+	}
+	
+	function beginEdit(index,row){
+		
+		
+		
+		$("#userlist").datagrid('cancelEdit',currentrows);
+		if(index==currentrows){
+			$("#userlist").datagrid('beginEdit',index,row);
+		}
+		$("#userlist").datagrid('beginEdit',index);
+		ondbclickrows=index;
+		data="update";
+	}
+	
+	function AddUser(){
+		$.ajax({
+			url:"/Userid.do",
+			method:"get",
+			dataType:"json",
+			success:function(data){
+				var userid=data.total;
+				$("#resultvalue").textbox("setValue",userid);
+			}
+		});
+		var uid=$("#resultvalue").textbox("getValue");
+		console.log(uid);
+		var rows={uid:uid,uname:"",upassword:""};
+		if(uid!=""){
+			currentrows = $("#userlist").datagrid('getRows').length;
+			$("#userlist").datagrid('insertRow',{index:currentrows+1,row:rows});
+			beginEdit(currentrows);
+			data="add";	
+		}
+		
+	}
+	function saveUser(){
+		save="save";
+		$("#userlist").datagrid('endEdit',currentrows);
+		$("#userlist").datagrid('endEdit',ondbclickrows);
+		var ChangeRows = $("#userlist").datagrid('getChanges');
+		EditRow = ChangeRows[ChangeRows.length-1];
+		if(data=="add"){
+			$.ajax({
+				url:"/add.do?clazz=user",
+				method:"get",
+				data:EditRow,
+				dataType:"json",
+				success:function(data){
+					console.log(data.success);
+					var value=data.success;
+					$("#resultvalue").textbox("setValue",value);
+				}
+			});
+		}else if(data=="update"){
+			$.ajax({
+				url:"/UpdateServlet.do?clazz=user",
+				method:"get",
+				data:EditRow,
+				dataType:"json"
+			});
+		}
+	}
+	function deleteUser(){
+		console.log(OnClickRow);
+		$("#userlist").datagrid('deleteRow',OnClickIndex);
+		$.ajax({
+			url:"/Delete.do?clazz=user",
+			method:"get",
+			data:OnClickRow,
+			dataType:"json"
+		});
+		
+	}
+	
+	/*
+		导出
+	*/
+	
+	function exportdata(){
+		$.ajax({
+			url:"/ExportServlet.do?clazz=user",
+			method:"get"
+		});
+	}
+	/*
+	导入
+	*/
+	function importUser(){
+		parent.$("#studentWin").window({
+			width:450,
+			height:250,
+			content:'<iframe src="ImportUser.html" frameborder="no" height="100%" width="100%" scrolling="no" border="0" allowtransparency="yes"></iframe>',
+			onClose:function(){
+				$("#userlist").datagrid('load');
+			}
+		});
+	}
+	
+</script>
+	
+	
+	
+</head>
+<body>
+
+<div id="toolbar">
+	<a href="javascript:AddUser()" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加歌曲</a>
+	<a href="javascript:deleteUser()" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">删除歌曲</a>
+	<a href="javascript:saveUser()" class="easyui-linkbutton" data-options="iconCls:'icon-save'">保存</a>
+	<input id="resultvalue" style="display:none"/>
+	<a href="javascript:exportdata()" class="easyui-linkbutton">导出</a>
+	<a href="javascript:importUser()" class="easyui-linkbutton">导入数据</a>
+	<div style="margin:20px 0;">
+        <span>Border:</span>
+        <select onchange="changeBorder(this.value)">
+            <option value="lines-both">Both</option>
+            <option value="lines-no">No Border</option>
+            <option value="lines-right">Right Border</option>
+            <option value="lines-bottom">Bottom Border</option>
+        </select>
+    </div>
+</div>
+
+
+<div id="userlist" data-options="singleSelect:true"></div>
+
+</body>
+</html>
